@@ -1,7 +1,10 @@
 const userModel = require('../models/user.model');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { use } = require('passport');
 const userController = {};
+const { OAuth2Client } = require('google-auth-library');
+const client = new OAuth2Client(process.env.CLIENTID);
 
 userController.prueba = (req, res) => {
     return res.send('qwerty pruebas');
@@ -253,6 +256,25 @@ userController.login = async (req, res) => {
             message: error
         });
     }
+}
+
+//Configuracion de google
+async function verify(token) {
+    const tikcet = await client.verifyIdToken({
+        idToken: token,
+        audience: process.env.CLIENTID
+    });
+    const payload = tikcet.getPayload();
+    const userid = payload['sub'];
+
+    console.log('payload', payload);
+}
+
+userController.google = async (req, res) => {
+
+
+    let { authorization } = req.headers;
+    verify(authorization);
 }
 
 module.exports = userController;

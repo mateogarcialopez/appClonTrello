@@ -16,6 +16,7 @@ route.put('/updateUser/:id', [verifiToken], userController.updateUser);
 route.delete('/deleteUser/:id', [verifiToken], userController.deleteUser);
 route.put('/desactivateUser/:id', [verifiToken], userController.desactivateUser);
 route.post('/login', userController.login);
+route.get('/loginGoogle', userController.google);
 
 //notes
 route.post('/addNote', [middlewareMultiparty, verifiToken], noteController.addNote);
