@@ -267,14 +267,80 @@ async function verify(token) {
     const payload = tikcet.getPayload();
     const userid = payload['sub'];
 
-    console.log('payload', payload);
+    console.log(payload);
+    return payload;
 }
 
 userController.google = async (req, res) => {
 
 
-    let { authorization } = req.headers;
-    verify(authorization);
+    try {
+        let { authorization } = req.headers;
+        let verifiToken = await verify(authorization)
+            .catch(e => {
+                return res.status(403).json({
+                    status: false,
+                    error: e
+                });
+            });
+
+
+        let email = await userModel.findOne({ email: verifiToken.email });
+
+        if (email) {
+
+            if (email.google === false) {
+                return res.jason({
+                    status: false,
+                    message: 'Debe autenticarse de la otra forma'
+                });
+            } else {
+                let token = jwt.sign({ data: email }, 'clavesecreta', { expiresIn: '48h' });
+
+                return res.json(
+                    {
+                        status: true,
+                        usuario: email,
+                        token: token
+                    }
+                );
+            }
+        } else {
+            let usuario = new userModel({
+                nombre_completo: verifiToken.name,
+                email: verifiToken.email,
+                google: true,
+                contrasena: ':)'
+            });
+
+            let userSaved = await usuario.save();
+
+            if (!userSaved) {
+                return res.json({
+                    status: false,
+                    message: 'N se pudo almacenar el usuario'
+                });
+            }
+
+            if (userSaved) {
+                let token = jwt.sign({ data: userSaved }, 'clavesecreta', { expiresIn: '48h' });
+                return res.json(
+                    {
+                        status: true,
+                        message: 'Usuario almacenado',
+                        user: userSaved,
+                        token: token
+                    }
+                );
+            }
+        }
+
+    } catch (error) {
+        return res.status(400).json({
+            status: false,
+            error: error
+        });
+    }
 }
 
 module.exports = userController;
