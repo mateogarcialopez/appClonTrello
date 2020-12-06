@@ -3,8 +3,6 @@ const jwt = require('jsonwebtoken');
 const verifiToken = async (req, res, next) => {
 
     let { authorization } = req.headers;
-    console.log(authorization);    
-
     try {
         var decoded = await jwt.verify(authorization, 'clavesecreta');
 

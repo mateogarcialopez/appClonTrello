@@ -4,19 +4,15 @@ const userModel = require('../models/user.model');
 const fs = require('fs');
 const path = require('path');
 
+
 //add note
 noteController.addNote = async (req, res) => {
     try {
-
-        let splitSmg = req.files.img.path.split('\\');
-        let nameImg = splitSmg[splitSmg.length - 1];
-
-        console.log(nameImg);
         const newNote = new noteModel({
             titulo: req.body.titulo,
             descripcion: req.body.descripcion,
             user: req.user._id,
-            img: nameImg
+            img: req.file.filename
         });
 
         let noteSaved = await newNote.save();
@@ -77,6 +73,7 @@ noteController.getNote = async (req, res) => {
     try {
 
         let { idnote } = req.params;
+        console.log('idnote', idnote);
         let note = await noteModel.findOne({ _id: idnote, user: req.user._id }).populate('user');
 
         if (!note) {
@@ -106,12 +103,11 @@ noteController.updateNote = async (req, res) => {
     try {
 
         let { id } = req.params;
-        let splitSmg = req.files.img.path.split('\\');
-        let nameImg = splitSmg[splitSmg.length - 1];
+
         let newnote = {
             titulo: req.body.titulo,
             descripcion: req.body.descripcion,
-            img: nameImg
+            img: req.file.filename
         }
 
         let note = await noteModel.findById(id);
